@@ -31,7 +31,7 @@ RUN mkdir -p /etc/dnsmasq.d && \
   rm -f /etc/supervisord.conf
 
 COPY fichiers/dnsmasq.conf /etc/dnsmasq.conf
-COPY fichiers/dnsmasq.tmpl /etc/dnsmasq.d/dockergen.tpl
+COPY fichiers/dnsmasq.tpl /etc/dnsmasq.d/dockergen.tpl
 COPY fichiers/supervisord.conf /etc/supervisord.conf
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
