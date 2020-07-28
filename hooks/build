@@ -14,10 +14,12 @@ for arch in ${verified_build_architectures[@]}; do
   BASE_IMAGE_PREFIX="${base_image_prefix_map[${arch}]}"
   QEMU_ARCH="${docker_qemu_arch_map[${arch}]}"
   IMAGE_TAG="${DOCKER_REPO}:${arch}-${DOCKER_TAG}"
+  DG_ARCH="${docker_gen_binary_map[${arch}]}"
 
   docker build \
     --build-arg BASE_IMAGE_PREFIX=${BASE_IMAGE_PREFIX} \
     --build-arg QEMU_ARCH=${QEMU_ARCH} \
+    --build-arg DG_ARCH=${DG_ARCH} \
     --build-arg BUILD_DATE=${BUILD_DATE} \
     --build-arg BUILD_REF=${BUILD_REF} \
     --build-arg BUILD_VERSION=${DOCKER_TAG} \

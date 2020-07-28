@@ -1,39 +1,72 @@
-# Docker-Multiarch
-Modèle pour des images docker Multiarch
+# My-Dnsmasq-Gen
+=====
 
-## Comment ça marche ?
-Grâce à l'autobuild de Docker Hub.
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/Jeremie-C/my-dnsmasq-gen)
+![docker build](https://img.shields.io/docker/cloud/build/jeremiec82/my-dnsmasq-gen)
+![docker pull](https://img.shields.io/docker/pulls/jeremiec82/my-dnsmasq-gen)
+![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)
 
-Le dépôt GitHub doit être en lien avec Docker Hub.
-L'auto-build peut être activé ou non.
+Container running Dnsmasq, Supervisord and my-docker-gen.
 
-La gestion des tags et des manifestes est automatique.
+## Supported Architectures
 
-## Exemples de configuration
+The architectures supported by this image are:
 
-![Configuration AutoBuild](./images/autobuild.png "Configuration")
+| Architecture | Tag |
+| :----: | --- |
+| x86-64 | amd64-latest |
+| arm64 | arm64v8-latest |
+| armv7 | arm32v7-latest |
+| armv6 | arm32v6-latest |
 
-> NOTE: 
-> Vous n'êtes pas obligé de créer toutes ces règles.
-> Elles ne sont là que pour détailler le fonctionnement
+## Usage
 
-### Règle 1
-Si la branche est "master", nous n'utilisons pas le "Docker Tag"
-Les images seront tagué => IMAGE:ARCH-COMMITID
-Le manifeste regroupant les images sera tagué => IMAGE:MASTER
+```
+docker create \
+  --name=dnsmasq-gen \
+  --cap-add=NET_ADMIN \
+  -p 53:53/udp \
+  -e HOST_NAME=docker.local \
+  -e HOST_IP=192.168.1.1 \
+  -e HOST_TLD=local `#optional` \
+  -e DNS_NORESOLV=false  `#optional` \
+  -e DNS_NOHOSTS=false  `#optional` \
+  -e LOG_QUERIES=false  `#optional` \
+  -v /path/to/dnsmasq.d:/etc/dnsmasq.d \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  jeremiec82/my-dnsmasq-gen
+```
 
-### Règle 2 / Règle 3
-Si vous voulez créer des images depuis d'autres branches que master.
-Le "Docker Tag" doit être égal à **develop** pour obtenir le résultat suivant :
-Les images seront tagué => IMAGE:ARCH-COMMITID
-Le manifeste regroupant les images sera tagué => IMAGE:SOURCE_BRANCH
+## Parameters
 
-> **ATTENTION**
-> Si vous entrez un autre "Docker Tag" que **develop**
-> Les images seront tagué => IMAGE:DOCKER_TAG
-> Le manifeste sera tagué => IMAGE:latest
+| Parameter | Function |
+| :----: | --- |
+| `-p 53/udp` | dnsmasq port |
+| `-e HOST_NAME=docker.local` | Hostname for docker host inserted in dnsmasq |
+| `-e HOST_IP=192.168.1.1` | External IP for docker host inserted in dnsmasq |
+| `-e HOST_TLD=local` | Extension for containers EG nginx.local |
+| `-e DNS_NORESOLV=false` | If true, dnsmasq don't use container resolv.conf  |
+| `-e DNS_NOHOSTS=false` | If true, dnsmasq don't use container /etc/hosts file |
+| `-e LOG_QUERIES=false` | If true, all queries are logged |
+| `-v /etc/dnsmasq.d` | Contains all relevant configuration files. |
+| `-v /var/run/docker.sock:ro` | my-docker-gen source for new containers configuration. |
 
-### Règle 4
-Lors de la création d'un TAG, d'une RELEASE sur votre dépôt GitHub
-Les images seront tagué => IMAGE:ARCH-x.x.x
-Le manifeste regroupant les images sera tagué => IMAGE:latest
+## How it works
+
+When a new container is started, stopped, ... my-docker-gen is informed and create the container in dnsmasq.
+
+_Example:_
+You create a container named "nginx", you can access it with nginx.local
+
+## Assign domain name to a container
+
+If you want to access a container with a full url like 'nginx.demo.in' you have to set "DNS_NAME" environnent variable.
+
+_Example:_
+```
+docker create \
+  --name=nginx-web \
+  -e DNS_NAME=nginx.demo.in \
+  -v /some/content:/usr/share/nginx/html:ro \
+  nginx
+```
